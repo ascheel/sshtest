@@ -1,0 +1,28 @@
+---
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: Uninstall ntp
+      yum:
+        state: removed
+        name: ntp*
+      become: yes
+    - name: Install chrony
+      yum:
+        state: installed
+        name: chrony
+      become: yes
+    - name: Copy chronyd.conf
+      copy:
+        src: chrony.conf
+        dest: /etc/chrony.conf
+        follow: yes
+        force: yes
+        mode: '644'
+      become: yes
+    - name: Restart chronyd
+      service:
+        name: chronyd
+        enabled: yes
+        state: restarted
+      become: yes

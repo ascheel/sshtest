@@ -1,0 +1,17 @@
+---
+# - hosts: na_ea_dev
+#   gather_facts: false
+
+  # tasks:
+  #   - name: install python3
+  #     raw: test -e /usr/bin/python3 || yum install python3 -y
+  #     register: out
+  #     become: yes
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: List files
+      shell: ls -l /
+      become: yes
+      register: output
+    - debug: var=output.stdout_lines

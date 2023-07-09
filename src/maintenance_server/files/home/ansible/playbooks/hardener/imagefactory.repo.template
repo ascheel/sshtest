@@ -1,0 +1,6 @@
+[image-factory]
+name=image-factory
+baseurl=https://%ARTIFACTORY_USER%:%ARTIFACTORY_PASSWORD%@%BASEURL%
+enabled=1
+gpgcheck=1
+gpgkey=https://%ARTIFACTORY_USER%:%ARTIFACTORY_PASSWORD%@artifactory-uw2.adobeitc.com/artifactory/rpm-image-factory-hardener-prod-release/IF_Hardener_Pub

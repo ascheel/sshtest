@@ -1,0 +1,16 @@
+profiles:
+  - na-ea-dev1
+  - na-ea-stage
+  - ea_prod
+  - na-ea-prod-ondemand
+  - na-ea-aep-dev
+  - na-ea-aep-stage
+  - na-ea-aep-prod
+  - na-ea-dev
+  - na-ea-prodold
+whitelist:
+  - klam-system
+  - klam-system-klamAwsReadOnly
+  - portalsvc1
+  - SKMS_user
+  - gauntlet-user

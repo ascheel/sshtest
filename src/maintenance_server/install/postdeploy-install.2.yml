@@ -1,0 +1,22 @@
+pre-install:
+  delete:
+    - null
+  create:
+    # Can only create directories
+    - null
+install:
+  file-moves:
+    # - src: home2
+    #   dst: '~'
+    #   ignore: example.txt
+    - src: home
+      dst: '~'
+    # - src: crontabs
+    #   dst: /etc/cron.d
+    #   prod_only: true
+post-install:
+  delete:
+    - ~/ansible/playbooks/splunk/splunk_rpm.yml
+  create:
+    # Can only create directories
+    - logs

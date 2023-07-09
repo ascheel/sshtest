@@ -1,0 +1,112 @@
+branches:
+  dev:
+    - build-dev
+    - deploy-dev
+    - deploy-stage
+  master:
+    - build-prod
+    - deploy-prod
+    - cleanup-dev
+    - cleanup-stage
+
+steps:
+  build-dev:
+    image: cicd-builder
+    wait: true
+    env:
+      VAULT_HOST: vault::acs_de/vault::prod/host/na
+      VAULT_ROLE_ID: vault::acs_de/vault::prod/acs_de_approle_read/role-id
+      VAULT_ROLE_SECRET: vault::acs_de/vault::prod/acs_de_approle_read/secret-id
+      ARTIFACTORY_USERNAME: vault::acs_de/cicd/artifactory::snapshot/username
+      ARTIFACTORY_PASSWORD: vault::acs_de/cicd/artifactory::snapshot/password
+      ARTIFACTORY_GENERIC_REPO: vault::acs_de/cicd/artifactory::snapshot/generic/repo
+    vaultV2: true
+    commands:
+      - bash scripts/cicd-build.sh
+  build-prod:
+    image: cicd-builder
+    wait: true
+    env:
+      VAULT_HOST: vault::acs_de/vault::prod/host/na
+      VAULT_ROLE_ID: vault::acs_de/vault::prod/acs_de_approle_read/role-id
+      VAULT_ROLE_SECRET: vault::acs_de/vault::prod/acs_de_approle_read/secret-id
+      ARTIFACTORY_USERNAME: vault::acs_de/cicd/artifactory::release/username
+      ARTIFACTORY_PASSWORD: vault::acs_de/cicd/artifactory::release/password
+      ARTIFACTORY_GENERIC_REPO: vault::acs_de/cicd/artifactory::release/generic/repo
+    vaultV2: true
+    commands:
+      - bash scripts/cicd-build.sh
+  deploy-dev:
+    image: cicd-builder
+    env:
+      AWS_ACCESS_KEY_ID: vault::acs_de/cicd/aws::dev/credentials/access_key
+      AWS_SECRET_ACCESS_KEY: vault::acs_de/cicd/aws::dev/credentials/secret_key
+      ARTIFACTORY_USERNAME: vault::acs_de/cicd/artifactory::release/username
+      ARTIFACTORY_PASSWORD: vault::acs_de/cicd/artifactory::release/password
+      VAULT_HOST: vault::acs_de/vault::prod/host/na
+      VAULT_ROLE_ID: vault::acs_de/vault::prod/acs_de_approle_read/role-id
+      VAULT_ROLE_SECRET: vault::acs_de/vault::prod/acs_de_approle_read/secret-id
+      DEVOPS_KEY: vault::acs_de/ssh::id_rsa_devops
+      EA_KEY: vault::acs_de/ssh::id_rsa_ea
+      ENVIRONMENT: dev
+      GIT_KEY: vault::acs_de/cicd/git::ssh/key
+    vaultV2: true
+    commands:
+      - bash scripts/cicd-deploy-server.sh
+  deploy-stage:
+    image: cicd-builder
+    env:
+      AWS_ACCESS_KEY_ID: vault::acs_de/cicd/aws::staging/credentials/access_key
+      AWS_SECRET_ACCESS_KEY: vault::acs_de/cicd/aws::staging/credentials/secret_key
+      ARTIFACTORY_USERNAME: vault::acs_de/cicd/artifactory::release/username
+      ARTIFACTORY_PASSWORD: vault::acs_de/cicd/artifactory::release/password
+      VAULT_HOST: vault::acs_de/vault::prod/host/na
+      VAULT_ROLE_ID: vault::acs_de/vault::prod/acs_de_approle_read/role-id
+      VAULT_ROLE_SECRET: vault::acs_de/vault::prod/acs_de_approle_read/secret-id
+      DEVOPS_KEY: vault::acs_de/ssh::id_rsa_devops
+      EA_KEY: vault::acs_de/ssh::id_rsa_ea
+      ENVIRONMENT: stage
+      GIT_KEY: vault::acs_de/cicd/git::ssh/key
+    vaultV2: true
+    commands:
+      - bash scripts/cicd-deploy-server.sh
+  deploy-prod:
+    image: cicd-builder
+    env:
+      AWS_ACCESS_KEY_ID: vault::acs_de_priv/cicd/aws::prod/credentials/access_key
+      AWS_SECRET_ACCESS_KEY: vault::acs_de_priv/cicd/aws::prod/credentials/secret_key
+      ARTIFACTORY_USERNAME: vault::acs_de/cicd/artifactory::release/username
+      ARTIFACTORY_PASSWORD: vault::acs_de/cicd/artifactory::release/password
+      VAULT_HOST: vault::acs_de/vault::prod/host/na
+      VAULT_ROLE_ID: vault::acs_de/vault::prod/acs_de_approle_read/role-id
+      VAULT_ROLE_SECRET: vault::acs_de/vault::prod/acs_de_approle_read/secret-id
+      DEVOPS_KEY: vault::acs_de/ssh::id_rsa_devops
+      EA_KEY: vault::acs_de/ssh::id_rsa_ea
+      ENVIRONMENT: prod
+      GIT_KEY: vault::acs_de/cicd/git::ssh/key
+    vaultV2: true
+    commands:
+      - bash scripts/cicd-deploy-server.sh
+  cleanup-dev:
+    image: cicd-builder
+    wait: true
+    env:
+      AWS_ACCESS_KEY_ID: vault::acs_de/cicd/aws::dev/credentials/access_key
+      AWS_SECRET_ACCESS_KEY: vault::acs_de/cicd/aws::dev/credentials/secret_key
+      ARTIFACTORY_USERNAME: vault::acs_de/cicd/artifactory::release/username
+      ARTIFACTORY_PASSWORD: vault::acs_de/cicd/artifactory::release/password
+      ENVIRONMENT: dev
+    vaultV2: true
+    commands:
+      - bash scripts/cicd-destroy-server.sh
+  cleanup-stage:
+    image: cicd-builder
+    env:
+      AWS_ACCESS_KEY_ID: vault::acs_de/cicd/aws::staging/credentials/access_key
+      AWS_SECRET_ACCESS_KEY: vault::acs_de/cicd/aws::staging/credentials/secret_key
+      ARTIFACTORY_USERNAME: vault::acs_de/cicd/artifactory::release/username
+      ARTIFACTORY_PASSWORD: vault::acs_de/cicd/artifactory::release/password
+      ENVIRONMENT: stage
+    vaultV2: true
+    commands:
+      - bash scripts/cicd-destroy-server.sh

@@ -1,0 +1,92 @@
+---
+- hosts: all
+  tasks:
+    - name: Set rsyslog time format
+      copy:
+        src: files/splunk_timestamp.conf
+        dest: /etc/rsyslog.d/splunk_timestamp.conf
+        mode: '644'
+      become: yes
+    - name: Restart rsyslog
+      service:
+        name: rsyslog
+        state: restarted
+      become: yes
+    - name: Copy splunkforwarder package
+      copy:
+        src: packages/%rpm%
+        dest: /tmp/%rpm%
+    - name: Install splunkforwarder
+      yum:
+        state: present
+        name: /tmp/%rpm%
+      become: yes
+    - name: Set perms on /opt/splunkforwarder
+      file:
+        path: /opt/splunkforwarder
+        owner: splunk
+        group: splunk
+        mode: 'u+rwX,go+rX'
+        recurse: yes
+      become: yes
+    - name: Enable boot-start, set to run as user splunk
+      shell: /opt/splunkforwarder/bin/splunk enable boot-start -user splunk --accept-license --answer-yes --no-prompt
+      become: yes
+    - name: Install user-seed.conf (creates admin user)
+      copy:
+        src: files/user-seed.conf
+        dest: /opt/splunkforwarder/etc/system/local/user-seed.conf
+      become: yes
+    - name: Restart splunk to create the new user
+      script: files/restart.sh
+      become: yes
+    - name: Create /opt/splunkforwarder/etc/apps/UF-TA-killrest/local directory
+      file:
+        path: /opt/splunkforwarder/etc/apps/UF-TA-killrest/local
+        state: directory
+        mode: '755'
+      become: yes
+    - name: Copy server.conf file
+      copy:
+        src: files/server.conf
+        dest: /opt/splunkforwarder/etc/apps/UF-TA-killrest/local/server.conf
+      become: yes
+    - name: Ensure splunk user can read /var/log
+      shell: setfacl -Rm u:splunk:r-x,d:u:splunk:r-x /var/log
+      become: yes
+      ignore_errors: yes
+    - name: Copy config files
+      copy:
+        src: config/{{ splunk_dir }}
+        dest: /opt/splunkforwarder/etc/apps
+      become: yes
+    - name: Fix perms on config directories and files
+      file:
+        path: /opt/splunkforwarder/etc/apps
+        recurse: yes
+        owner: splunk
+        group: splunk
+      become: yes
+    - name: Fix host name
+      # This exists just to give it a unique splunk host name
+      script: files/set_splunk_host.py
+      become: yes
+    - name: Restart splunk again
+      script: files/restart.sh
+      become: yes
+- hosts: centos6:amazon_linux
+  gather_facts: no
+  tasks:
+    - name: Fix perms on /var/log/secure
+      file:
+        path: /var/log/secure
+        mode: '644'
+      become: yes
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: Restart splunk forwarder
+      service:
+        name: splunk
+        state: restarted
+      become: yes

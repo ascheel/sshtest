@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+DEBUG=0
+
+debug () {
+    [[ "$DEBUG" != "1" ]] && return 0
+    echo "DEBUG $(basename $0):$@"
+}
+
+echo "This is the user script."
+
+UPLOAD="${HOME}/upload"
+SSHDIR="${HOME}/.ssh"
+DEVOPSFILE="${HOME}/.ssh/id_rsa_devops.pub"
+AUTHKEYSFILE="${SSHDIR}/authorized_keys"
+
+[[ ! -d "${SSHDIR}" ]] && mkdir -p "${SSHDIR}"
+[[ -f "${AUTHKEYSFILE}" ]] && mv "${AUTHKEYSFILE}" "${AUTHKEYSFILE}.$(date +%F-%H-%M-%S)"
+[[ -f "${DEVOPSFILE}" ]] && cat "${DEVOPSFILE}" > "${AUTHKEYSFILE}"
+
+chmod 700 "${SSHDIR}"
+chmod 600 "${SSHDIR}/config"
+chmod 600 ${SSHDIR}/id_*
+chmod 644 ${SSHDIR}/id_*.pub
+chmod 600 "${AUTHKEYSFILE}"

@@ -1,0 +1,27 @@
+---
+- hosts: all
+  tasks:
+    # - name: Attempt normal removal
+    #   yum:
+    #     state: removed
+    #     name: hubblestack
+    #   become: yes
+    # - name: Attempt shell removal
+    #   shell: yum --setopt=tsflags=noscripts remove hubblestack -y
+    #   become: yes
+    # - name: uninstall Hubble HARDCORE in case the first failed
+    #   shell: rpm -e --noscripts hubblestack
+    #   become: yes
+    - name: Scripted removal of old Hubble
+      script: remove.sh
+      become: yes
+    - name: remove old Hubble repo file if it exists.
+      file:
+        state: absent
+        path: /etc/yum.repos.d/hubblestack.repo
+      become: yes
+    - name: remove Hubble config file
+      file:
+        state: absent
+        path: /etc/hubble/hubble.d/user.conf
+      become: yes

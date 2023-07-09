@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Update including kernel
+      yum:
+        name: '*'
+        state: latest
+        skip_broken: yes
+      become: yes
+      

@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: OS Detection  
+      script: os_detection.py
+      register: output
+    - debug: var=output.stdout_lines

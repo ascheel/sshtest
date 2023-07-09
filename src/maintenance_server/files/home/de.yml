@@ -1,0 +1,422 @@
+ssh:
+  ldap_groups:
+    - dx_de_dev_std
+    - dx_de_dev_sudo
+    - dx_de_prod_std
+    - dx_de_prod_sudo
+    - dx_ea_ondemand_std
+    - dx_ea_ondemand_sudo
+    - dx_de_d365_dev_std
+    - dx_de_d365_dev_sudo
+    - dx_de_d365_prod_std
+    - dx_de_d365_prod_sudo
+aws:
+  accounts:
+    na-ea-dev:
+      accountno: '825246229660'
+      env: dev
+      falcon-env: DEV
+      jump_hosts:
+        us-east-1: jump.dev.ea.adobe.net
+        ap-southeast-1: jump.dev-sgp3.ea.adobe.net
+        ap-southeast-2: jump.dev-aus3.ea.adobe.net
+        eu-west-1: jump.dev-irl1.ea.adobe.net
+      ldap:
+        owner: EA_DEV_ROLE_ADMIN_GROUP
+        read_only: EA_DEV_READ_ONLY_GROUP
+        power_user: EA_DEV_POWER_USER_GROUP
+        admin: EA_DEV_ADMIN_GROUP
+        ssh_std: dx_de_dev_std
+        ssh_sudo: dx_de_dev_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_DEV
+    na-ea-stage:
+      accountno: '703906229121'
+      env: stage
+      falcon-env: STG
+      jump_hosts:
+        us-east-1: jump.stage.ea.adobe.net
+        ap-southeast-1: jump.stage-sgp3.ea.adobe.net
+        ap-southeast-2: jump.stage-aus3.ea.adobe.net
+        eu-west-1: jump.stage-irl1.ea.adobe.net
+      ldap:
+        owner: AWS1308_STG_ROLE_ADMIN
+        read_only: AWS1308_STG_READ_ONLY
+        power_user: AWS1308_STG_POWER_USER
+        admin: AWS1308_STG_ADMINISTRATOR
+        ssh_std: dx_de_dev_std
+        ssh_sudo: dx_de_dev_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_STAGE
+    na-ea-prod:
+      accountno: '138548266239'
+      env: prod
+      falcon-env: PRD
+      jump_hosts:
+        us-east-1: jump.ea.adobe.net
+        ap-southeast-1: jump.sgp3.ea.adobe.net
+        ap-southeast-2: jump.aus3.ea.adobe.net
+        eu-west-1: jump.irl1.ea.adobe.net
+      ldap:
+        owner: EA_PROD_ROLE_ADMIN
+        read_only: EA_PROD_READY_ONLY
+        power_user: EA_PROD_POWER_USER
+        admin: EA_PROD_ADMIN
+        ssh_std: dx_de_prod_std
+        ssh_sudo: dx_de_prod_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_PROD
+    na-ea-prod-ondemand:
+      accountno: '885661242077'
+      env: prod
+      falcon-env: PRD
+      jump_hosts:
+        us-east-1: jump.ondemand.ea.adobe.net
+        us-west-2: 54.189.61.169
+      ldap:
+        owner: GRP-EA_ONDEMAND_ROLE_ADMIN
+        read_only: GRP-EA_ONDEMAND_READ_ONLY
+        power_user: GRP-EA_ONDEMAND_POWER_USER
+        admin: GRP-EA_ONDEMAND_ADMIN
+        ssh_std: dx_ea_ondemand_std
+        ssh_sudo: dx_ea_ondemand_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_PROD
+    acs-de-dlzcw-dev:
+      accountno: '794841586657'
+      env: dev
+      falcon-env: DEV
+      jump_hosts:
+        us-east-1: jump.dev.dlzcw.ea.adobe.net
+      ldap:
+        owner: EA_DEV_ROLE_ADMIN_GROUP
+        read_only: EA_DEV_READ_ONLY_GROUP
+        power_user: EA_DEV_POWER_USER_GROUP
+        admin: EA_DEV_ADMIN_GROUP
+        ssh_std: dx_de_dev_std
+        ssh_sudo: dx_de_dev_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_DEV
+    acs-de-dlzcw-prod:
+      accountno: '791688017300'
+      env: prod
+      falcon-env: PRD
+      jump_hosts:
+        us-east-1: jump.dlzcw.ea.adobe.net
+      ldap:
+        owner: EA_PROD_ROLE_ADMIN
+        read_only: EA_PROD_READY_ONLY
+        power_user: EA_PROD_POWER_USER
+        admin: EA_PROD_ADMIN
+        ssh_std: dx_de_prod_std
+        ssh_sudo: dx_de_prod_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_PROD
+    na-ea-d365-dev:
+      accountno: '272939673473'
+      env: dev
+      falcon-env: DEV
+      jump_hosts:
+        us-east-1: jump.dev-va6.d365.ea.adobe.net
+      ldap:
+        owner: AWS1307_DEV_ROLE_ADMIN
+        read_only: AWS1307_DEV_READ_ONLY
+        power_user: AWS1307_DEV_POWER_USER
+        admin: AWS1307_DEV_ADMINISTRATOR
+        ssh_std: dx_de_d365_dev_std
+        ssh_sudo: dx_de_d365_dev_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_AEP_DEV
+    na-ea-d365-stage:
+      accountno: '715082977368'
+      env: stage
+      falcon-env: STG
+      jump_hosts:
+        us-east-1: jump.stage-va6.d365.ea.adobe.net
+        eu-west-1: jump.stage-irl1.d365.ea.adobe.net
+        ap-southeast-2: jump.stage-aus3.d365.ea.adobe.net
+      ldap:
+        owner: AWS1306_STG_ROLE_ADMIN
+        read_only: AWS1306_STG_READ_ONLY
+        power_user: AWS1306_STG_POWER_USER
+        admin: AWS1306_STG_ADMINISTRATOR
+        ssh_std: dx_de_d365_dev_std
+        ssh_sudo: dx_de_d365_dev_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_AEP_STAGE
+    na-ea-d365-prod:
+      accountno: '675621389411'
+      env: prod
+      falcon-env: PRD
+      jump_hosts:
+        us-east-1: jump.prod-va6.d365.ea.adobe.net
+        eu-west-1: jump.prod-irl1.d365.ea.adobe.net
+        ap-southeast-2: jump.prod-aus3.d365.ea.adobe.net
+      ldap:
+        owner: AWS1305_PRD_ROLE_ADMIN
+        read_only: AWS1305_PRD_READ_ONLY
+        power_user: AWS1305_PRD_POWER_USER
+        admin: AWS1305_PRD_ADMINISTRATOR
+        ssh_std: dx_de_d365_prod_std
+        ssh_sudo: dx_de_d365_prod_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_AEP_PROD
+    na-ea-devold:
+      accountno: '706290578232'
+      env: dev
+      falcon-env: DEV
+      jump_hosts:
+        us-east-1: 54.184.6.208
+      ldap:
+        owner: EA_DEV_ROLE_ADMIN_GROUP
+        read_only: EA_DEV_READ_ONLY_GROUP
+        power_user: EA_DEV_POWER_USER_GROUP
+        admin: EA_DEV_ADMIN_GROUP
+        ssh_std: dx_de_dev_std
+        ssh_sudo: dx_de_dev_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_DEV
+    na-ea-prodold:
+      accountno: '059295778573'
+      env: prod
+      falcon-env: PRD
+      jump_hosts:
+        us-east-1: scvm1310
+        us-west-2: scvm1310
+      ldap:
+        owner: EA_PROD_ROLE_ADMIN
+        read_only: EA_PROD_READY_ONLY
+        power_user: EA_PROD_POWER_USER
+        admin: EA_PROD_ADMIN
+        ssh_std: dx_de_prod_std
+        ssh_sudo: dx_de_prod_sudo
+      splunk_dir: DS-va6-DC-engineering-architects_PROD
+  regions:
+    us-east-1:
+      default: true
+      short: VA6
+      location: Virginia
+    us-west-1:
+      short: CA1
+      location: California
+    us-west-2:
+      short: OR2
+      location: Oregon
+    eu-west-1:
+      short: IRL1
+      location: Ireland
+    ap-southeast-1:
+      short: SGP3
+      location: Singapore
+    ap-southeast-2:
+      short: AUS3
+      location: Sydney
+azure:
+  accounts:
+    d365-dev:
+      id: 5ba16202-f423-4ca0-810c-954a4b66484f
+      name: DMa/ACS Dynamics365 Connector DEV (AZR4840)
+    d365-stage:
+      id: 01b49349-db13-4e52-9cc0-bd8cddbaec67
+      name: DMa/ACS Dynamics365 Connector STG (AZR4841)
+    d365-prod:
+      id: 9526da2f-7e0a-4372-9caa-533bd488b097
+      name: DMa/ACS Dynamics365 Connector PRD (AZR4842)
+    dev:
+      id: 1179dd4f-c753-4584-a850-a87ba0406feb
+      name: WWFO/AGS EA DEV (AZR0309)
+    prod:
+      id: 10ca20f9-783e-479f-97a6-df86f8b0c2b2
+      name: WWFO/AGS EA PRD (AZR0310)
+    calc:
+      id: 55f48584-fcc2-4bac-9270-8e859d4f438f
+      name: Adobe/Azure Calculator DEV (AZR0829)
+  regions:
+    east-us-2:
+      short: VA7
+      location: Virginia
+    west-us:
+      short: CA6
+      location: California
+    west-us-2:
+      short: WA1
+      location: Washington
+    brazil-south:
+      short: BRA3
+      location: Sao Paolo State
+    canada-central:
+      short: CAN2
+      location: Toronto
+    southeast-asia:
+      short: SGP5
+      location: Singapore
+    japan-east:
+      short: JPN4
+      location: Tokyo, Saitama
+    australia-east:
+      short: AUS5
+      location: New South Wales
+    central-india:
+      short: IND2
+      location: Pune
+    east-asia:
+      short: HKG3
+      location: Hong Kong
+    china-east-2:
+      short: CHN3
+      location: Shanghai
+    west-europe:
+      short: NLD2
+      location: Netherlands
+    north-europe:
+      short: IRL3
+      location: Ireland
+    germany-west-central:
+      short: DEU6
+      location: Frankfurt
+cmdb:
+  device_service_team_name: Consulting
+  environment_name: Consulting Engineering Services
+inventory:
+  datadir: data
+  skip_on_no_creds: yes
+  max_backups: 5
+  explicit_keys: no
+  ec2_required_tags:
+    - Adobe.Customer
+    - Adobe.ArchPath
+    - Adobe.Owner
+  users:
+    - ec2-user
+    - ea
+    - de
+    - centos
+    - hadoop
+  first_attempts:
+    - ec2-user, id_rsa_ea
+    - hadoop, id_rsa_ea
+    - ea, id_rsa_ea
+    - de, id_rsa_ea
+    - centos, id_rsa_ea
+  key_blacklist:
+    - id_rsa_github_ascheel
+  keys:
+    - id_rsa_ea
+    - id_rsa_devops
+  os_map:
+    Amazon Linux 1: amazon_linux
+    Amazon Linux 2: amazon_linux_2
+    CentOS 7: centos7
+    CentOS 6: centos7
+    Ubuntu: ubuntu
+    unknown: unknown
+proxies:
+  vpc-0164961ecb5977c9d:
+    description: na-ea-dev, us-east-1
+    host: jump.dev-va6.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0182134059641bdc3:
+    description: na-ea-prod-ondemand, us-west-2
+    host: 54.189.61.169
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0373a1347217e05cd:
+    description: na-ea-prod, us-east-1
+    host: jump.prod-va6.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-059882ed4839c60d1:
+    description: na-ea-d365-prod, eu-west-1
+    host: jump.prod-irl1.d365.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-062a421dbb51540d9:
+    description: na-ea-stage, eu-west-1
+    host: jump.stage-irl1.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-068106a90acfa9899:
+    description: na-ea-stage, ap-southeast-2
+    host: jump.stage-aus3.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-06957188f2e83814a:
+    description: na-ea-d365-prod, us-east-1
+    host: jump.prod-va6.d365.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-06b210351754c74e6:
+    description: na-ea-prod, eu-west-1
+    host: jump.prod-irl1.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-079c01355c46d8057:
+    description: na-ea-prod, ap-southeast-2
+    host: jump.prod-aus3.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0b7b01129e920a1f8:
+    description: na-ea-d365-dev, us-east-1
+    host: jump.dev-va6.d365.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0c31248156c688b07:
+    description: na-ea-prod-ondemand, us-east-1
+    host: 54.197.232.217
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0c626b350584500a2:
+    description: na-ea-d365-stage, ap-southeast-2
+    host: jump.stage-aus3.d365.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0ccb747cff01a34a1:
+    description: na-ea-d365-stage, us-east-1
+    host: jump.stage-va6.d365.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0d2fe356794e3d4de:
+    description: na-ea-stage, us-east-1
+    host: jump.stage-va6.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0d44a433832b3ea87:
+    description: na-ea-d365-prod, ap-southeast-2
+    host: jump.prod-aus3.d365.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-0d7fb09b70d40e84b:
+    description: na-ea-d365-stage, eu-west-1
+    host: jump.stage-irl1.d365.ea.adobe.net
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null
+  vpc-9e81dce7:
+    description: na-ea-devold, us-west-2
+    host: 44.232.208.199
+    user: ea
+    key: id_rsa_ea
+    port: 22
+    key_vault: null

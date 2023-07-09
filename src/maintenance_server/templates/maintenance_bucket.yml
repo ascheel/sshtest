@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Maintenance server S3 deployment user
+Parameters:
+  ArchPath:
+    Type: String
+    Default: DX.DE
+  Creator:
+    AllowedPattern: .+
+    Default: scheel
+    Type: String
+  Customer:
+    Type: String
+    Default: DE.Internal
+  Owner:
+    Default: de-devops@adobe.com
+    Type: String
+  S3BucketName:
+    Type: String
+    Default: dxde.maintenance
+  # S3UserName:
+  #   Type: String
+  #   Default: s3_maintenance
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketName
+      VersioningConfiguration:
+        Status: Enabled
+  # S3BucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties:
+  #     Bucket: !Ref S3Bucket
+  #     PolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Effect: Allow
+  #           Action:
+  #             - s3:GetObject
+  #             - s3:GetObjectTagging
+  #             - s3:GetObjectVersion
+  #             - s3:ListBucket
+  #           Resource:
+  #             - !Sub arn:aws:s3:::${S3BucketName}
+  #             - !Sub arn:aws:s3:::${S3BucketName}/*
+  #           Principal:
+  #             AWS: !GetAtt S3User.Arn
+  # S3User:
+  #   Type: AWS::IAM::User
+  #   Properties:
+  #     UserName: !Ref S3UserName

@@ -1,0 +1,8 @@
+boto3
+botocore
+requests
+pyyaml
+troposphere
+hvac
+gitpython
+paramiko

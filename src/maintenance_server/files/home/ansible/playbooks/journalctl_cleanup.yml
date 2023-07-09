@@ -1,0 +1,8 @@
+---
+- hosts: amazon_linux_2,centos7
+  gather_facts: no
+  tasks:
+    - name: run journalctl --vacuum-time=2d
+      shell: journalctl --vacuum-time=2d
+      become: yes
+      

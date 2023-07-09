@@ -1,0 +1,40 @@
+global:
+  expiration_in_hours: 3
+  secrets_manager_path: dx/ea/vault
+secrets:
+  na-ea-dev:
+    profile: na-ea-dev
+    region: us-east-1
+  na-ea-stage:
+    profile: na-ea-stage
+    region: us-east-1
+  na-ea-prod:
+    profile: na-ea-prod
+    region: us-east-1
+  na-ea-prod-ondemand-1:
+    profile: na-ea-prod-ondemand
+    region: us-east-1
+  na-ea-prod-ondemand-2:
+    profile: na-ea-prod-ondemand
+    region: us-west-2
+  na-ea-d365-dev:
+    profile: na-ea-d365-dev
+    region: us-east-1
+  na-ea-d365-stage-amer:
+    profile: na-ea-d365-stage
+    region: us-east-1
+  na-ea-d365-stage-apac:
+    profile: na-ea-d365-stage
+    region: ap-southeast-2
+  na-ea-d365-stage-emea:
+    profile: na-ea-d365-stage
+    region: eu-west-1
+  na-ea-d365-prod-amer:
+    profile: na-ea-d365-prod
+    region: us-east-1
+  na-ea-d365-prod-apac:
+    profile: na-ea-d365-prod
+    region: ap-southeast-2
+  na-ea-d365-prod-emea:
+    profile: na-ea-d365-prod
+    region: eu-west-1

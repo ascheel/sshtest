@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import configparser
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit("Usage: {} <profile from aws creds file>".format(sys.argv[0]))
+    
+    config = configparser.ConfigParser()
+    credential_file = os.path.join(os.path.expanduser("~"), ".aws/credentials")
+    
+    if not os.path.isfile(credential_file):
+        sys.exit("No credentials file found at {}".format(credential_file))
+    
+    config.read(credential_file)
+    
+    access_key_id     = None
+    secret_access_key = None
+
+    for section in config.sections():
+        if section == sys.argv[1]:
+            access_key_id     = config[section].get("aws_access_key_id")
+            secret_access_key = config[section].get("aws_secret_access_key")
+    
+    if not access_key_id or not secret_access_key:
+        sys.exit("missing credentials for {}".format(sys.argv[1]))
+
+    print('export AWS_ACCESS_KEY_ID={}'.format(access_key_id))
+    print('export AWS_SECRET_ACCESS_KEY={}'.format(secret_access_key))
+
+
+if __name__ == "__main__":
+    main()
