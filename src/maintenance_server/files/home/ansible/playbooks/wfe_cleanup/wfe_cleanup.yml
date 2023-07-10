@@ -1,9 +1,0 @@
----
-- hosts: all
-  tasks:
-    - name: run cleanup script
-      script: wfe_cleanup.py
-      register: hello
-    - debug: msg="{{ hello.stdout }}"
-    - debug: msg="{{ hello.stderr }}"
-    

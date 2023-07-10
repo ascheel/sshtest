@@ -1,5 +1,0 @@
-pycryptodome
-pyyaml
-hvac
-boto3
-botocore

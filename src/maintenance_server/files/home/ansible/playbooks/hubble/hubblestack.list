@@ -1,3 +1,0 @@
-# place into /etc/apt/sources.list.d/hubblestack.list
-deb [trusted=yes arch=amd64] https://adobeea:AKCp5e2gBFkTopyhnNQsESaVAfdax9urC7VhQQpfsFZAJVDwX81enzgGXGGCYp9esBx6Kdnat@artifactory-uw2.adobeitc.com/artifactory/debian-hubble-release-local dme debian9
-

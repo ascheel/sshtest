@@ -1,3 +1,0 @@
-paramiko
-boto3
-pyyaml

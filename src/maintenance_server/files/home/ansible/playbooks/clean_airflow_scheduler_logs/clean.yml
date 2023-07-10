@@ -1,7 +1,0 @@
----
-- hosts: all
-  tasks:
-    - name: Clean Up Airflow Scheduler Logs
-      script: clean_scheduler.py
-    #   register: output
-    # - debug: var=output.stdout_lines

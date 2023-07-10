@@ -1,6 +1,0 @@
-[hubblestack]
-name = hubblestack
-baseurl=https://adobeea:AKCp5e2gBFkTopyhnNQsESaVAfdax9urC7VhQQpfsFZAJVDwX81enzgGXGGCYp9esBx6Kdnat@artifactory-uw2.adobeitc.com/artifactory/rpm-hubble-release/dme/centos7
-enabled=1
-gpgcheck=1
-gpgkey=https://adobeea:AKCp5e2gBFkTopyhnNQsESaVAfdax9urC7VhQQpfsFZAJVDwX81enzgGXGGCYp9esBx6Kdnat@artifactory-uw2.adobeitc.com/artifactory/rpm-hubble-release/HubbleDMe_May2019_pub.key
