@@ -9,15 +9,59 @@ import (
 	"bufio"
 	"io"
 	"fmt"
-	"strconv"
+	_ "strconv"
 	"net"
 )
 
 type SSH struct {
 	host string
-	port int
-	key_filename string
+	port string `default:"22`
+	user string
 	password string
+	key_filename string
+	key_bytes []byte
+	knownhostsfile string
+}
+
+func (s SSH) setDefaults() {
+	if s.knownhostsfile == nil {
+		homedir, err := os.UserHomeDir()
+		check(err)
+		sshdir := filepath.Join(homedir, ".ssh")
+		s.knownhostsfile = filepath.Join(sshdir, "known_hosts")
+	}
+}
+
+func (s SSH) hostString() string {
+	return net.JoinHostPort(s.host, s.port)
+}
+
+func (s SSH) getKeyBytes() []byte {
+	// Read file
+	bs, err := os.ReadFile(s.key_filename)
+	check(err)
+
+	// Return contents
+	return bs
+}
+
+func (s SSH) getSigner() (ssh.Signer) {
+	signer, err := ssh.ParsePrivateKey(s.getKeyBytes())
+	check(err)
+	return signer
+}
+
+func (s SSH) getConfig() ssh.ClientConfig {
+	hostKeyCallback, err := knownhosts.New(s.knownhostsfile)
+	check(err)
+	conf := &ssh.ClientConfig{
+		User: s.user,
+		HostKeyCallback: hostKeyCallback,
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(s.getSigner()),
+		},
+	}
+	return conf
 }
 
 func check(e error) {
@@ -26,41 +70,23 @@ func check(e error) {
 	}
 }
 
-func readSize(file *os.File) int64 {
-	stat, err := file.Stat()
-	check(err)
-	return stat.Size()
-}
-
-func readFile(filename string) []byte {
-	file, err := os.Open(filename)
-	check(err)
-	defer file.Close()
-	// Read the file into a byte slice
-	bs := make([]byte, readSize(file))
-	_, err = bufio.NewReader(file).Read(bs)
-	if err != nil && err != io.EOF {
-		fmt.Println(err)
-	}
-	return bs
-}
-
 func main() {
 	homedir, err := os.UserHomeDir()
 	check(err)
 
 	sshdir := filepath.Join(homedir, ".ssh")
-	knownhostsfile := filepath.Join(sshdir, "known_hosts")
+	// knownhostsfile := filepath.Join(sshdir, "known_hosts")
 
-	user := "art"
-	host := "192.168.1.14"
-	port := "22"
-
-	hoststring:= net.JoinHostPort(host, port)
 	pKeyPath := filepath.Join(sshdir, "id_rsa_legion")
-	pKey := readFile(pKeyPath)
-	signer, err := ssh.ParsePrivateKey(pKey)
-	check(err)
+
+	s := SSH {
+		host: "192.168.1.14",
+		user: "art",
+		key_filename: pKeyPath,
+	}
+	s.setDefaults()
+
+	signer, err := s.getSigner()
 
 	hostKeyCallback, err := knownhosts.New(knownhostsfile)
 	check(err)
