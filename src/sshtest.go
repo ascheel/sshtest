@@ -4,7 +4,7 @@ import (
 	"os"
 	"log"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/knownhosts"
+	//"golang.org/x/crypto/ssh/knownhosts"
 	"path/filepath"
 	"bufio"
 	"io"
@@ -13,13 +13,19 @@ import (
 	"net"
 	"errors"
 	"syscall"
+	"time"
+	//"strings"
 )
 
 type SSH struct {
-	host string
-	port int
-	key_filename string
+	host     string
+	user     string
+	port     string
+	key      string
 	password string
+	errCode  uint8
+	errText  string
+	errRaw   error
 }
 
 func check(e error) {
@@ -47,35 +53,26 @@ func readFile(filename string) []byte {
 	return bs
 }
 
-func sshConnectWithPKey(hostname string, port string, user string, pKeyFileName string) (*ssh.Client, *ssh.Session, error) {
-	hostString := net.JoinHostPort(hostname, port)
-	pKey := readFile(pKeyFileName)
+func sshConnectWithPKey(connInfo *SSH) (*ssh.Client, *ssh.Session, error) {
+	hostString := net.JoinHostPort(connInfo.host, connInfo.port)
+	pKey := readFile(connInfo.key)
 	signer, err := ssh.ParsePrivateKey(pKey)
 	check(err)
 
 	//hostKeyCallback, err := knownhosts.New(knownHostsFile)
 	//check(err)
 
+	timeout, _ := time.ParseDuration("5s")
+
 	conf := &ssh.ClientConfig{
-		User: user,
+		User: connInfo.user,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
+		Timeout: timeout,
 	}
 
 	conf.HostKeyCallback = ssh.InsecureIgnoreHostKey()
-
-	// var conn *ssh.Client
-	// fmt.Println("Connecting.")
-	// conn, err = ssh.Dial("tcp", hostString, conf)
-	// sshCheck(err)
-	// //defer conn.Close()
-	// fmt.Println("Connected.")
-
-	// var session *ssh.Session
-	// session, err = conn.NewSession()
-	// check(err)
-	//defer session.Close()
 
 	client, err := ssh.Dial("tcp", hostString, conf)
 	if err != nil {
@@ -84,18 +81,38 @@ func sshConnectWithPKey(hostname string, port string, user string, pKeyFileName 
 
 	session, err := client.NewSession()
 	if err != nil {
+		fmt.Println("Failure with client.NewSession()")
 		return nil, nil, err
 	}
 
 	return client, session, nil
-
-	return true
 }
 
-func tryConnectWithPrivateKey(host string, port string, user string, pKeyPath string) bool {
-	client, session, err := sshConnectWithPKey(host, port, user, pKeyPath)
+//func tryConnectWithPrivateKey(host string, port string, user string, pKeyPath string) bool {
+func tryConnectWithPrivateKey(connInfo *SSH) bool {
+	if len(connInfo.port) == 0 {
+		connInfo.port = "22"
+	}
+
+	client, session, err := sshConnectWithPKey(connInfo)
+	if err != nil {
+		connInfo.errRaw = err
+		return false
+	}
 	command := "ls -l /"
-	output, err := session.CombinedOutput(command)
+	_, err = session.CombinedOutput(command)
+	if err != nil {
+		connInfo.errRaw = err
+		return false
+	}
+	//outputString := string(output[:])
+	//fmt.Println(outputString)
+	if client == nil || session == nil {
+		log.Fatal("You shouldn't get here.")
+		return false
+	}
+	connInfo.errCode = 0
+	connInfo.errText = "success"
 	return true
 }
 
@@ -107,28 +124,68 @@ func sshCheck(err error) {
 	}
 }
 
+func tryConnect(connInfo *SSH) bool {
+	if len(connInfo.key) == 0 && len(connInfo.password) == 0 {
+		log.Fatalln("No key or password provided.")
+	} else if len(connInfo.key) > 0 && len(connInfo.password) > 0 {
+		log.Fatalln("Application does not yet support passwords AND keys both.")
+	} else if len(connInfo.host) == 0 {
+		log.Fatalln("No host provided.")
+	} else if len(connInfo.port) == 0 {
+		connInfo.port = "22"
+	}
+	if len(connInfo.key) > 0 {
+		// Connect with key
+		tryConnectWithPrivateKey(connInfo)
+	} else if len(connInfo.password) > 0 {
+		//return tryConnectWithPassword(connInfo)
+	}
+	return true
+}
+
 func main() {
 	homedir, err := os.UserHomeDir()
 	check(err)
 
 	sshdir := filepath.Join(homedir, ".ssh")
-
-	user := "art"
-	host := "192.168.1.198"
-	port := "22"
-
 	pKeyPath := filepath.Join(sshdir, "id_rsa_legion")
 
-	success := tryConnectWithPrivateKey(
-		host,
-		port,
-		user,
-		pKeyPath,
-	)
+	connInfo := SSH {
+		host: "192.168.1.15",
+		user: "art",
+		port: "22",
+		key: pKeyPath,
+		password: "",
+	}
+
+	success := tryConnect(&connInfo)
 	if success {
 		fmt.Println("Successful.")
 	} else {
 		fmt.Println("Failure.")
+		var errCode uint8 = 0
+		var errText string
+		var e *net.OpError
+		// dial tcp 192.168.1.198:22: connect: connection refused
+		// ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain
+		// dial tcp 192.168.1.3:22: connect: no route to host
+		// dial tcp 172.217.14.78:22: i/o timeout
+
+		if errors.As(err, &e) {
+			errText = e.Err.Error()
+			if errText == "i/o timeout" {
+				errCode = 1
+			} else if errText == "connection refused" {
+				errCode = 2
+			} else if errText == "no route to host" {
+				errCode = 3
+			}
+			fmt.Println(errText)
+			fmt.Println(errCode)
+		}
+		//subs := strings.SplitN(err.Error(), ":", 1)
+		fmt.Println("Failure with ssh.Dial()")
+		fmt.Println(err)
 	}
 }
 
