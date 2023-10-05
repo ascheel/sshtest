@@ -9,59 +9,17 @@ import (
 	"bufio"
 	"io"
 	"fmt"
-	_ "strconv"
+	//"strconv"
 	"net"
+	"errors"
+	"syscall"
 )
 
 type SSH struct {
 	host string
-	port string `default:"22`
-	user string
-	password string
+	port int
 	key_filename string
-	key_bytes []byte
-	knownhostsfile string
-}
-
-func (s SSH) setDefaults() {
-	if s.knownhostsfile == nil {
-		homedir, err := os.UserHomeDir()
-		check(err)
-		sshdir := filepath.Join(homedir, ".ssh")
-		s.knownhostsfile = filepath.Join(sshdir, "known_hosts")
-	}
-}
-
-func (s SSH) hostString() string {
-	return net.JoinHostPort(s.host, s.port)
-}
-
-func (s SSH) getKeyBytes() []byte {
-	// Read file
-	bs, err := os.ReadFile(s.key_filename)
-	check(err)
-
-	// Return contents
-	return bs
-}
-
-func (s SSH) getSigner() (ssh.Signer) {
-	signer, err := ssh.ParsePrivateKey(s.getKeyBytes())
-	check(err)
-	return signer
-}
-
-func (s SSH) getConfig() ssh.ClientConfig {
-	hostKeyCallback, err := knownhosts.New(s.knownhostsfile)
-	check(err)
-	conf := &ssh.ClientConfig{
-		User: s.user,
-		HostKeyCallback: hostKeyCallback,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(s.getSigner()),
-		},
-	}
-	return conf
+	password string
 }
 
 func check(e error) {
@@ -70,106 +28,107 @@ func check(e error) {
 	}
 }
 
-func main() {
-	homedir, err := os.UserHomeDir()
+func readSize(file *os.File) int64 {
+	stat, err := file.Stat()
 	check(err)
+	return stat.Size()
+}
 
-	sshdir := filepath.Join(homedir, ".ssh")
-	// knownhostsfile := filepath.Join(sshdir, "known_hosts")
-
-	pKeyPath := filepath.Join(sshdir, "id_rsa_legion")
-
-	s := SSH {
-		host: "192.168.1.14",
-		user: "art",
-		key_filename: pKeyPath,
+func readFile(filename string) []byte {
+	file, err := os.Open(filename)
+	check(err)
+	defer file.Close()
+	// Read the file into a byte slice
+	bs := make([]byte, readSize(file))
+	_, err = bufio.NewReader(file).Read(bs)
+	if err != nil && err != io.EOF {
+		fmt.Println(err)
 	}
-	s.setDefaults()
+	return bs
+}
 
-	signer, err := s.getSigner()
-
-	hostKeyCallback, err := knownhosts.New(knownhostsfile)
+func sshConnectWithPKey(hostname string, port string, user string, pKeyFileName string) (*ssh.Client, *ssh.Session, error) {
+	hostString := net.JoinHostPort(hostname, port)
+	pKey := readFile(pKeyFileName)
+	signer, err := ssh.ParsePrivateKey(pKey)
 	check(err)
+
+	//hostKeyCallback, err := knownhosts.New(knownHostsFile)
+	//check(err)
 
 	conf := &ssh.ClientConfig{
 		User: user,
-		HostKeyCallback: hostKeyCallback,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
 	}
 
-	var conn *ssh.Client
-	conn, err = ssh.Dial("tcp", hoststring, conf)
-	check(err)
-	defer conn.Close()
+	conf.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
-	var session *ssh.Session
-	session, err = conn.NewSession()
-	check(err)
-	defer session.Close()
+	// var conn *ssh.Client
+	// fmt.Println("Connecting.")
+	// conn, err = ssh.Dial("tcp", hostString, conf)
+	// sshCheck(err)
+	// //defer conn.Close()
+	// fmt.Println("Connected.")
 
-	var stdin io.WriteCloser
-	var stdout, stderr io.Reader
+	// var session *ssh.Session
+	// session, err = conn.NewSession()
+	// check(err)
+	//defer session.Close()
 
-	stdin, err = session.StdinPipe()
-	check(err)
+	client, err := ssh.Dial("tcp", hostString, conf)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	stdout, err = session.StdoutPipe()
-	check(err)
+	session, err := client.NewSession()
+	if err != nil {
+		return nil, nil, err
+	}
 
-	stderr, err = session.StderrPipe()
-	check(err)
+	return client, session, nil
 
-	wr := make(chan []byte, 10)
+	return true
+}
 
-	go func() {
-		for {
-			select {
-			case d := <-wr:
-				_, err := stdin.Write(d)
-				check(err)
-			}
+func tryConnectWithPrivateKey(host string, port string, user string, pKeyPath string) bool {
+	client, session, err := sshConnectWithPKey(host, port, user, pKeyPath)
+	command := "ls -l /"
+	output, err := session.CombinedOutput(command)
+	return true
+}
+
+func sshCheck(err error) {
+	if err != nil {
+		if errors.Is(err, syscall.ECONNREFUSED) {
+			fmt.Println("Connection refused.  CAUGHT IT.")
 		}
-	}()
+	}
+}
 
-	go func() {
-		scanner := bufio.NewScanner(stdout)
-		for {
-			if tkn := scanner.Scan(); tkn {
-				rcv := scanner.Bytes()
-				raw := make([]byte, len(rcv))
-				copy(raw, rcv)
-				fmt.Println(string(raw))
-			} else {
-				if scanner.Err() != nil {
-					fmt.Println(scanner.Err())
-				} else {
-					fmt.Println("io.EOF")
-				}
-				return
-			}
-		}
-	}()
+func main() {
+	homedir, err := os.UserHomeDir()
+	check(err)
 
-	go func() {
-		scanner := bufio.NewScanner(stderr)
+	sshdir := filepath.Join(homedir, ".ssh")
 
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-	}()
+	user := "art"
+	host := "192.168.1.198"
+	port := "22"
 
-	session.Shell()
+	pKeyPath := filepath.Join(sshdir, "id_rsa_legion")
 
-	for {
-		fmt.Println("$")
-
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		text := scanner.Text()
-
-		wr <- []byte(text + "\n")
+	success := tryConnectWithPrivateKey(
+		host,
+		port,
+		user,
+		pKeyPath,
+	)
+	if success {
+		fmt.Println("Successful.")
+	} else {
+		fmt.Println("Failure.")
 	}
 }
 
