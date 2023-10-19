@@ -11,7 +11,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"path/filepath"
+	//"path/filepath"
 
 	//"strconv"
 	"errors"
@@ -23,6 +23,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"reflect"
+
+	"flag"
 )
 
 type connectionInfo struct {
@@ -36,8 +38,33 @@ type connectionInfo struct {
 	ErrRaw   error
 }
 
-func (connInfo *connectionInfo) SetDefaults() {
-	connInfo.Port = "22"
+var connInfo connectionInfo
+
+func init() {
+	flag.StringVar(&connInfo.User, "user", "", "User name")
+	flag.StringVar(&connInfo.Port, "port", "22", "Port number (default 22)")
+	flag.StringVar(&connInfo.Host, "host", "", "Host to connect to")
+	flag.StringVar(&connInfo.Password, "password", "", "Password")
+	flag.StringVar(&connInfo.Key, "private-key", "", "Private key filename")
+	
+	flag.Parse()
+
+	if connInfo.Password != "" && connInfo.Key != "" {
+		log.Fatalln("Only supply password or private key, not both.")
+	}
+
+	var goodToGo bool = true
+
+	if connInfo.User == "" {
+		fmt.Println("Error: user is a required argument")
+		goodToGo = false
+	} else if connInfo.Host == "" {
+		fmt.Println("Error: host is a required argument")
+		goodToGo = false
+	}
+	if goodToGo == false {
+		os.Exit(1)
+	}
 }
 
 func check(e error) {
@@ -108,14 +135,6 @@ func sshConnect(connInfo *connectionInfo) (*ssh.Client, *ssh.Session, error) {
 	return client, session, nil
 }
 
-func sshCheck(err error) {
-	if err != nil {
-		if errors.Is(err, syscall.ECONNREFUSED) {
-			fmt.Println("Connection refused.  CAUGHT IT.")
-		}
-	}
-}
-
 func tryConnect(connInfo *connectionInfo) bool {
 	if len(connInfo.Key) == 0 && len(connInfo.Password) == 0 {
 		log.Fatalln("No key or password provided.")
@@ -143,6 +162,7 @@ func tryConnect(connInfo *connectionInfo) bool {
 }
 
 func printStruct(connInfo *connectionInfo) {
+
 	s := reflect.ValueOf(&connInfo).Elem().Elem()
 	typeOfSSH := s.Type()
 	//fmt.Println(typeOfSSH)
@@ -167,11 +187,12 @@ func getJson(connInfo *connectionInfo) string {
 		Host: connInfo.Host,
 		Port: connInfo.Port,
 		User: connInfo.User,
-		Password: sha256sum(connInfo.Password),
+		Password: "Hash: " + sha256sum(connInfo.Password),
 		Key: connInfo.Key,
 		ErrCode: connInfo.ErrCode,
 		ErrText: connInfo.ErrText,
 	}
+	if len(connInfo.Password) == 0 { obj.Password = "" }
 	jsonData, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
 		log.Fatalln("Failed to parse json output.")
@@ -187,8 +208,9 @@ func handleExit(connInfo *connectionInfo) {
 	// 4 = no route to host
 	// 5 = can't resolve host
 
-	printStruct(connInfo)
-	fmt.Printf("%+v\n", connInfo)
+	//printStruct(connInfo)
+	//fmt.Printf("%+v\n", connInfo)
+	var dnsError *net.DNSError
 	if connInfo.ErrRaw == nil {
 		connInfo.ErrCode = 0
 		connInfo.ErrText = "success"
@@ -202,13 +224,31 @@ func handleExit(connInfo *connectionInfo) {
 		} else if errors.Is(connInfo.ErrRaw, syscall.ECONNREFUSED) {
 			connInfo.ErrCode = 3
 			connInfo.ErrText = "connection refused"
+		} else if errors.Is(connInfo.ErrRaw, dnsError) {
+			connInfo.ErrCode = 5
+			connInfo.ErrText = "DNS Lookup error 2"
+		} else if isDNSError(connInfo.ErrRaw) {
+			connInfo.ErrCode = 6
+			connInfo.ErrText = "DNS Lookup error"
 		} else {
 			connInfo.ErrCode = 255
-			connInfo.ErrText = "Unknown"
+			connInfo.ErrText = fmt.Sprint(connInfo.ErrRaw)
 		}
 	}
 	fmt.Println(getJson(connInfo))
 	os.Exit(connInfo.ErrCode)
+}
+
+func isDNSError(err error) bool {
+	dnsKeywords := []string{
+		"no such host",
+	}
+	for _, keyword := range dnsKeywords {
+		if strings.Contains(strings.ToLower(string(fmt.Sprint(err))), strings.ToLower(keyword)) {
+			return true
+		}
+	}
+	return false
 }
 
 func isAuthenticationError(err error) bool {
@@ -233,53 +273,7 @@ func sha256sum(text string) string {
 }
 
 func main() {
-	homedir, err := os.UserHomeDir()
-	check(err)
-
-	sshdir := filepath.Join(homedir, ".ssh")
-	pKeyPath := filepath.Join(sshdir, "id_rsa_ea")
-
-	connInfo := connectionInfo {
-		// Host: "192.168.1.15",
-		Host: "10.43.1.1",
-		// Host: "jump.dev-va6.ea.adobe.net",
-		// Host: "192.168.1.2",
-		User: "ea",
-		Port: "22",
-		Key: pKeyPath,
-		Password: "",
-	}
-
 	tryConnect(&connInfo)
 	handleExit(&connInfo)
-
-	// if success {
-	// 	fmt.Println("Successful.")
-	// } else {
-	// 	fmt.Println("Failure.")
-	// 	var errCode uint8 = 0
-	// 	var errText string
-	// 	var e *net.OpError
-	// 	// dial tcp 192.168.1.198:22: connect: connection refused
-	// 	// ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain
-	// 	// dial tcp 192.168.1.3:22: connect: no route to host
-	// 	// dial tcp 172.217.14.78:22: i/o timeout
-
-	// 	if errors.As(err, &e) {
-	// 		errText = e.Err.Error()
-	// 		if errText == "i/o timeout" {
-	// 			errCode = 1
-	// 		} else if errText == "connection refused" {
-	// 			errCode = 2
-	// 		} else if errText == "no route to host" {
-	// 			errCode = 3
-	// 		}
-	// 		fmt.Println(errText)
-	// 		fmt.Println(errCode)
-	// 	}
-	// 	//subs := strings.SplitN(err.Error(), ":", 1)
-	// 	fmt.Println("Failure with ssh.Dial()")
-	// 	fmt.Println(err)
-	// }
 }
 
